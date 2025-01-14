@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(20px); opacity: 0; }
+        }
+
+        @keyframes explode {
+            from {
+                transform: scale(0.5);
+                opacity: 1;
+            }
+            to {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 min-h-screen flex items-center justify-center">
+    <div class="container bg-white p-6 rounded-lg shadow-lg w-96 animation-fadeIn">
+        <h1 class="text-2xl font-bold text-center mb-4 text-gray-700 animation-slideDown">To-Do List</h1>
+        <input type="text" id="taskInput" class="w-full p-2 border border-gray-300 rounded mb-4" placeholder="Add a new task">
+        <button onclick="addTask()" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">Add Task</button>
+        <ul id="taskList" class="mt-4 space-y-2"></ul>
+    </div>
+
+    <div id="fireworksContainer"></div>
+
+    <script>
+        // Load tasks from local storage
+        document.addEventListener("DOMContentLoaded", loadTasks);
+
+        function loadTasks() {
+            const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+            tasks.forEach(task => renderTask(task.text, task.completed));
+        }
+
+        function saveTasks() {
+            const tasks = [];
+            document.querySelectorAll("#taskList li").forEach(item => {
+                tasks.push({
+                    text: item.querySelector("span").textContent,
+                    completed: item.classList.contains("line-through")
+                });
+            });
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        }
+
+        function renderTask(taskText, isCompleted = false) {
+            const taskList = document.getElementById("taskList");
+            const li = document.createElement("li");
+
+            li.className = `flex items-center justify-between p-3 rounded bg-gradient-to-r from-green-200 to-green-400 ${isCompleted ? 'line-through text-gray-500' : ''}`;
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.className = "mr-2 h-5 w-5 accent-green-500";
+            checkbox.checked = isCompleted;
+            checkbox.onchange = () => {
+                li.classList.toggle("line-through");
+                li.classList.toggle("text-gray-500");
+                showFireworks();
+                saveTasks();
+            };
+
+            const span = document.createElement("span");
+            span.textContent = taskText;
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "Delete";
+            deleteBtn.className = "bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded";
+            deleteBtn.onclick = () => {
+                li.style.animation = "slideOut 0.3s ease-in-out forwards";
+                setTimeout(() => {
+                    li.remove();
+                    saveTasks();
+                }, 300);
+            };
+
+            li.appendChild(checkbox);
+            li.appendChild(span);
+            li.appendChild(deleteBtn);
+            taskList.appendChild(li);
+        }
+
+        function addTask() {
+            const taskInput = document.getElementById("taskInput");
+            const taskText = taskInput.value.trim();
+
+            if (taskText === "") {
+                alert("Please enter a task.");
+                return;
+            }
+
+            renderTask(taskText);
+            saveTasks();
+
+            taskInput.value = "";
+        }
+
+        function showFireworks() {
+            const fireworks = document.createElement("div");
+            fireworks.className = "fireworks absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-6xl animate-bounce";
+            fireworks.textContent = "🎉";
+            document.body.appendChild(fireworks);
+
+            setTimeout(() => {
+                fireworks.remove();
+            }, 800);
+        }
+    </script>
+</body>
+</html>
